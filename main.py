@@ -137,23 +137,30 @@ time.sleep(5)
 
 async def main() -> None:
     tasks = []
+    # 颜文字存储
+    text_emoji = []
     for i in dom_list:
         name = i['name']
         mkdir(name)
         dom = BeautifulSoup(i['dom'], 'html.parser')
         for j in dom:
             if name == '颜文字':
-                continue
-            for num, emoji in enumerate(j):
-                emoji_name = emoji.div.get('title')[1:-1]
-                url = re.findall(URL_RE, emoji.div.get('style'))[0][:-1]
-                if '@' in url:
-                    url = url.split('@')[0]
-                url = url.replace('//', 'https://')
-                types = url.split('.')[-1]
-                tmp = asyncio.create_task(
-                    download(name, url, num, emoji_name, types))
-                tasks.append(tmp)
+                for k in j:
+                    text_emoji.append(k.text)
+                with open(download_folder / '颜文字' / 'emoji.json', 'w', encoding='utf-8') as fp:
+                    json.dump(text_emoji, fp, ensure_ascii=False)
+                    fp.close()
+            else:
+                for num, emoji in enumerate(j):
+                    emoji_name = emoji.div.get('title')[1:-1]
+                    url = re.findall(URL_RE, emoji.div.get('style'))[0][:-1]
+                    if '@' in url:
+                        url = url.split('@')[0]
+                    url = url.replace('//', 'https://')
+                    types = url.split('.')[-1]
+                    tmp = asyncio.create_task(
+                        download(name, url, num, emoji_name, types))
+                    tasks.append(tmp)
 
     print(f"开始下载{len(tasks)}个表情包")
     await asyncio.wait(tasks)
