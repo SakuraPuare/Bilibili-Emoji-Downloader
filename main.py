@@ -172,6 +172,24 @@ while page_now <= page:
 	if page_now != page:
 		next_page_btn.click()
 
+# 获取直播间地址
+live_list = []
+for name, uid in subscribe_list:
+	space_url = f"https://space.bilibili.com/{uid}"
+	driver.get(space_url)
+	try:
+		WebDriverWait(driver, 1.5).until(
+			ec.text_to_be_present_in_element((By.CLASS_NAME, 'i-live'), '直播间'))
+	except TimeoutException:
+		print(f"{name}up主未开通直播间")
+		continue
+	live_info_dom = driver.find_element(
+		By.CLASS_NAME, 'i-live').get_attribute('innerHTML')
+	live_info_soup = BeautifulSoup(live_info_dom, 'html.parser')
+	url = live_info_soup.find('a').attrs['href']
+	live_uid = url.split('?')[0].split('/')[-1]
+	live_list.append((name, live_uid))
+
 
 async def main() -> None:
 	tasks = []
