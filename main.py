@@ -86,6 +86,12 @@ with open('cookies.txt', 'w') as f:
 	f.write(json.dumps(cookies))
 	f.close()
 
+# 获取用户uid
+driver.get('https://space.bilibili.com/')
+while driver.current_url == 'https://space.bilibili.com':
+	pass
+uid = driver.current_url.split('/')[-1]
+
 # 获取表情名称
 driver.get('https://space.bilibili.com/281130859/dynamic')
 name_list = []
