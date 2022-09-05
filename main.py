@@ -57,8 +57,14 @@ driver.get('https://passport.bilibili.com/login')
 
 # 创建下载文件夹
 download_folder = pathlib.Path(__file__).with_name('download')
-if not (download_folder.exists() and download_folder.is_dir()):
-    download_folder.mkdir()
+up_download_folder = download_folder / '主播大表情'
+folder_list = [download_folder, up_download_folder]
+
+for i in folder_list:
+	if not (i.exists() and i.is_dir()):
+		i.mkdir()
+	else:
+		pass
 
 # 加载cookies
 cookies_path = pathlib.Path(__file__).with_name('cookies.txt')
