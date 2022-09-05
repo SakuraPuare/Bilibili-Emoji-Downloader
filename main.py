@@ -149,6 +149,29 @@ except TimeoutException:
 driver.quit()
 time.sleep(5)
 
+# 获取关注列表
+subscribe_list = []
+driver.get(f"https://space.bilibili.com/{uid}/fans/follow")
+WebDriverWait(driver, TIMEOUT).until(
+	ec.text_to_be_present_in_element((By.CLASS_NAME, 'be-pager-total'), '共'))
+page = int(driver.find_element(By.CLASS_NAME,
+                               'be-pager-total').text.split(' ')[1])
+next_page_btn = driver.find_element(By.CLASS_NAME, 'be-pager-next')
+page_now = 1
+while page_now <= page:
+	WebDriverWait(driver, TIMEOUT).until(
+		ec.text_to_be_present_in_element((By.CLASS_NAME, 'be-pager-total'), '共'))
+	sub_dom = driver.find_element(
+		By.CLASS_NAME, 'relation-list').get_attribute('innerHTML')
+	sub_soup = BeautifulSoup(sub_dom, 'html.parser')
+	for i in sub_soup:
+		up_uid = i.a.attrs['href'].split('/')[-2]
+		up_name = i.contents[-1].a.text
+		subscribe_list.append((up_name, up_uid))
+	page_now += 1
+	if page_now != page:
+		next_page_btn.click()
+
 
 async def main() -> None:
 	tasks = []
