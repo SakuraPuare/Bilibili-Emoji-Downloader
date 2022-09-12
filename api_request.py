@@ -13,8 +13,6 @@ filename_patten = re.compile(r'[\\/:*?\"<>|]')
 
 if not download_folder.exists() and not download_folder.is_dir():
 	download_folder.mkdir()
-else:
-	pass
 
 driver = webdriver.Chrome()
 driver.get('https://passport.bilibili.com/login')
@@ -30,7 +28,8 @@ if cookies_path.exists():
 	driver.get('https://passport.bilibili.com/account/security#/home')
 else:
 	# 等待登录
-	while driver.current_url == 'https://passport.bilibili.com/account/security#/home':
+	time.sleep(0.25)
+	while driver.current_url != 'https://passport.bilibili.com/account/security#/home':
 		time.sleep(0.5)
 
 # 读取并保存cookies
@@ -73,8 +72,6 @@ async def download(url: str, emote_name: str, ids: str, filename: str) -> None:
 		print(e, url)
 		return await download(url, emote_name, ids, filename)
 
-	pass
-
 
 # 获取表情列表
 async def get_emote_list() -> Union[None, Dict[str, Union[str, Dict[str, str]]]]:
@@ -86,6 +83,7 @@ async def get_emote_list() -> Union[None, Dict[str, Union[str, Dict[str, str]]]]
 	if response['code'] == 0:
 		return response['data']
 	else:
+		print('error code:', response['code'])
 		return None
 
 
@@ -95,9 +93,9 @@ async def download_emote_list() -> None:
 		return
 	else:
 		emote_list = emote_list['all_packages']
+		emote_tasks_list = []
 		for emotes in emote_list:
 			emotes_name = emotes['text']
-			emote_tasks_list = []
 			if emotes_name != '颜文字':
 				for ids, emote in enumerate(emotes['emote']):
 					emote_name = emote['text']
@@ -110,11 +108,11 @@ async def download_emote_list() -> None:
 					# await download(download_url, emotes_name, ids, emote_name)
 					task = asyncio.create_task(download(download_url, emotes_name, str(ids), emote_name))
 					emote_tasks_list.append(task)
-				await asyncio.wait(emote_tasks_list)
+		await asyncio.wait(emote_tasks_list)
 
 
 async def main():
-	await download_emote_list()
+	resp = await download_emote_list()
 	pass
 
 

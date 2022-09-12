@@ -48,9 +48,9 @@ async def download(dir_name: str, url: str, ids: int, emoji_name: str, types: st
 				with open(complete_path, "wb") as fs:
 					fs.write(res.content)
 					fs.close()
-	except:
+	except Exception as e:
 		await download(dir_name, url, ids, emoji_name, types)
-		pass
+		print(e)
 
 
 driver = webdriver.Chrome()
@@ -78,8 +78,9 @@ if cookies_path.exists():
 	driver.get('https://passport.bilibili.com/account/security#/home')
 else:
 	# 等待登录
-	while driver.current_url == 'https://passport.bilibili.com/account/security#/home':
-		pass
+	time.sleep(0.25)
+	while driver.current_url != 'https://passport.bilibili.com/account/security#/home':
+		time.sleep(0.5)
 
 # 读取并保存cookies
 cookies = driver.get_cookies()
@@ -90,7 +91,7 @@ with open('cookies.json', 'w') as f:
 # 获取用户uid
 driver.get('https://space.bilibili.com/')
 while driver.current_url == 'https://space.bilibili.com':
-	pass
+	time.sleep(0.5)
 uid = driver.current_url.split('/')[-1]
 
 # 获取表情名称
