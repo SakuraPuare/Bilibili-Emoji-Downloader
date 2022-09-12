@@ -78,8 +78,9 @@ if cookies_path.exists():
 	driver.get('https://passport.bilibili.com/account/security#/home')
 else:
 	# 等待登录
-	while driver.current_url == 'https://passport.bilibili.com/account/security#/home':
-		pass
+	time.sleep(0.25)
+	while driver.current_url != 'https://passport.bilibili.com/account/security#/home':
+		time.sleep(0.5)
 
 # 读取并保存cookies
 cookies = driver.get_cookies()
@@ -90,7 +91,7 @@ with open('cookies.json', 'w') as f:
 # 获取用户uid
 driver.get('https://space.bilibili.com/')
 while driver.current_url == 'https://space.bilibili.com':
-	pass
+	time.sleep(0.5)
 uid = driver.current_url.split('/')[-1]
 
 # 获取表情名称
