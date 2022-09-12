@@ -15,7 +15,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 TIMEOUT = 30
 HEADER = {
 	'authority': 'i0.hdslb.com',
-	'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+	'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
 	'accept-language': 'zh-CN,zh;q=0.9',
 	'cache-control': 'max-age=0',
 	'sec-ch-ua': '".Not/A)Brand";v="99", "Google Chrome";v="103", "Chromium";v="103"',
@@ -26,7 +26,7 @@ HEADER = {
 	'sec-fetch-site': 'none',
 	'sec-fetch-user': '?1',
 	'upgrade-insecure-requests': '1',
-	'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0Safari/537.36',
+	'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/103.0.0.0Safari/537.36',
 }
 URL_RE = re.compile(r'//\S*\"')
 LIMITS = httpx.Limits(max_keepalive_connections=5, max_connections=10)
@@ -49,6 +49,7 @@ async def download(dir_name: str, url: str, ids: int, emoji_name: str, types: st
 					fs.write(res.content)
 					fs.close()
 	except:
+		await download(dir_name, url, ids, emoji_name, types)
 		pass
 
 
@@ -67,7 +68,7 @@ for i in folder_list:
 		pass
 
 # 加载cookies
-cookies_path = pathlib.Path(__file__).with_name('cookies.txt')
+cookies_path = pathlib.Path(__file__).with_name('cookies.json')
 if cookies_path.exists():
 	with open(cookies_path, 'r') as f:
 		cookies = f.read()
@@ -82,7 +83,7 @@ else:
 
 # 读取并保存cookies
 cookies = driver.get_cookies()
-with open('cookies.txt', 'w') as f:
+with open('cookies.json', 'w') as f:
 	f.write(json.dumps(cookies))
 	f.close()
 
@@ -217,7 +218,6 @@ async def main() -> None:
 					tmp = asyncio.create_task(
 						download(dir_name=file_name, url=url, types=types, emoji_name=emoji_name, ids=pic_ids))
 					tasks.append(tmp)
-
 	print(f"开始下载{len(tasks)}个表情包")
 	await asyncio.wait(tasks)
 	print('Download complete')
