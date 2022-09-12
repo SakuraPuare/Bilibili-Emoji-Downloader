@@ -48,9 +48,9 @@ async def download(dir_name: str, url: str, ids: int, emoji_name: str, types: st
 				with open(complete_path, "wb") as fs:
 					fs.write(res.content)
 					fs.close()
-	except:
+	except Exception as e:
 		await download(dir_name, url, ids, emoji_name, types)
-		pass
+		print(e)
 
 
 driver = webdriver.Chrome()
