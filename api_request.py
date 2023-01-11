@@ -2,6 +2,7 @@ import asyncio
 import json
 import pathlib
 import re
+import tqdm
 import time
 from typing import Union, Dict
 
@@ -45,6 +46,8 @@ with open('cookies.json', 'w') as f:
 driver.quit()
 
 
+
+
 async def download(url: str, emote_name: str, ids: str, filename: str) -> None:
 	emote_type = '.' + url.split('.')[-1]
 	emotes_folder = pathlib.Path.joinpath(download_folder, emote_name)
@@ -86,7 +89,6 @@ async def get_emote_list() -> Union[None, Dict[str, Union[str, Dict[str, str]]]]
 		print('error code:', response['code'])
 		return None
 
-
 async def download_emote_list() -> None:
 	emote_list = await get_emote_list()
 	if emote_list is None:
@@ -106,14 +108,44 @@ async def download_emote_list() -> None:
 					else:
 						continue
 					# await download(download_url, emotes_name, ids, emote_name)
-					task = asyncio.create_task(download(download_url, emotes_name, str(ids), emote_name))
+					# task = asyncio.create_task(download(download_url, emotes_name, str(ids), emote_name))
+					task = [download_url, emotes_name, str(ids), emote_name]
 					emote_tasks_list.append(task)
-		await asyncio.wait(emote_tasks_list)
+		return emote_tasks_list
+
+# async def download_emote_list() -> None:
+# 	emote_list = await get_emote_list()
+# 	if emote_list is None:
+# 		return
+# 	else:
+# 		emote_list = emote_list['all_packages']
+# 		emote_tasks_list = []
+# 		for emotes in emote_list:
+# 			emotes_name = emotes['text']
+# 			if emotes_name != '颜文字':
+# 				for ids, emote in enumerate(emotes['emote']):
+# 					emote_name = emote['text']
+# 					if emote.__contains__('gif_url'):
+# 						download_url = emote['gif_url']
+# 					elif emote.__contains__('url'):
+# 						download_url = emote['url']
+# 					else:
+# 						continue
+# 					# await download(download_url, emotes_name, ids, emote_name)
+# 					task = asyncio.create_task(download(download_url, emotes_name, str(ids), emote_name))
+# 					emote_tasks_list.append(task)
+# 		await asyncio.wait(emote_tasks_list)
 
 
 async def main():
 	resp = await download_emote_list()
-	pass
+	#tqdm 显示下载进度
+	for i in tqdm.tqdm(range(0,len(resp),100)):
+		task_list = []
+		for j in resp[i:i+10]:
+			task = asyncio.create_task(download(*j))
+			task_list.append(task)
+		await asyncio.wait(task_list)
 
 
 if __name__ == '__main__':
