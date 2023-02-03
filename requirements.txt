@@ -1,3 +1,6 @@
-httpx
-bs4
-selenium
+httpx~=0.23.3
+bs4~=0.0.1
+selenium~=4.7.2
+
+beautifulsoup4~=4.11.1
+tqdm~=4.64.1
