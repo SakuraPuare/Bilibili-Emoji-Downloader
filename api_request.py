@@ -73,7 +73,7 @@ async def download(url: str, emote_name: str, ids: str, filename: str, sem: asyn
             return
     except Exception as e:
         print(e, url)
-        return await download(url, emote_name, ids, filename)
+        return await download(url, emote_name, ids, filename, sem)
 
 
 # 获取表情列表
