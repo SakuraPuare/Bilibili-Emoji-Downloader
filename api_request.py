@@ -1,7 +1,5 @@
 import asyncio
-import datetime
 import json
-import os
 import pathlib
 import re
 import time
@@ -63,16 +61,16 @@ async def download(url: str, emote_name: str, ids: str, filename: str, sem: asyn
 
     download_path = pathlib.Path.joinpath(emotes_folder, f"{ids}-{filename}").with_suffix(emote_type)
     try:
-        # if not download_path.exists() and not download_path.is_file():
-        async with sem:
-            async with httpx.AsyncClient() as client:
-                response = await client.get(url, cookies=httpx_cookies)
-                with open(download_path, 'wb') as fs:
-                    fs.write(response.content)
-                    fs.close()
-            await asyncio.sleep(1)
-        # else:
-        #     return
+        if not download_path.exists() and not download_path.is_file():
+            async with sem:
+                async with httpx.AsyncClient() as client:
+                    response = await client.get(url, cookies=httpx_cookies)
+                    with open(download_path, 'wb') as fs:
+                        fs.write(response.content)
+                        fs.close()
+                await asyncio.sleep(0.5)
+        else:
+            return
     except Exception as e:
         print(e, url)
         return await download(url, emote_name, ids, filename)
@@ -103,7 +101,7 @@ async def download_emote_list() -> List:
             emotes: Dict
             emotes_name = emotes.get('text')
             if emotes_name != '颜文字':
-                for ids, emote in enumerate(emotes['emote']):
+                for ids, emote in enumerate(emotes.get('emote')):
                     emote_name = emote['text']
                     if emote.get('gif_url'):
                         download_url = emote['gif_url']
@@ -115,11 +113,11 @@ async def download_emote_list() -> List:
                         emote_tasks_list.append(task)
                     else:
                         continue
-                return emote_tasks_list
-                # await download(download_url, emotes_name, ids, emote_name)
-                # task = asyncio.create_task(download(download_url, emotes_name, str(ids), emote_name))
-                # task = [download_url, emotes_name, str(ids), emote_name]
-                # emote_tasks_list.append(task)
+        return emote_tasks_list
+        # await download(download_url, emotes_name, ids, emote_name)
+        # task = asyncio.create_task(download(download_url, emotes_name, str(ids), emote_name))
+        # task = [download_url, emotes_name, str(ids), emote_name]
+        # emote_tasks_list.append(task)
 
 
 # async def download_emote_list() -> None:
@@ -147,18 +145,21 @@ async def download_emote_list() -> List:
 
 
 async def main():
-    data_file = pathlib.Path('raw.json')
-    file_time = datetime.datetime.fromtimestamp(os.stat(data_file).st_mtime)
-    time_now = datetime.datetime.fromtimestamp(time.time())
-    if (time_now - file_time).days > 1:
-        resp = await download_emote_list()
-        with open(data_file, 'w', encoding='u8') as fw:
-            json.dump(resp, fw, ensure_ascii=False)
-    else:
-        with open(data_file, 'r', encoding='u8') as fr:
-            resp = json.load(fr)
+    # data_file = pathlib.Path('raw.json')
+    # if data_file.exists():
+    #     file_time = datetime.datetime.fromtimestamp(os.stat(data_file).st_mtime)
+    # else:
+    #     file_time = datetime.datetime.fromtimestamp(0)
+    # time_now = datetime.datetime.fromtimestamp(time.time())
+    # if (time_now - file_time).days > 1:
+    resp = await download_emote_list()
+    #     with open(data_file, 'w', encoding='u8') as fw:
+    #         json.dump(resp, fw, ensure_ascii=False)
+    # else:
+    #     with open(data_file, 'r', encoding='u8') as fr:
+    #         resp = json.load(fr)
     task_list = []
-    sem = asyncio.Semaphore(20)
+    sem = asyncio.Semaphore(100)
     for i in resp:
         task_list.append(asyncio.create_task(download(*i, sem=sem)))
 
