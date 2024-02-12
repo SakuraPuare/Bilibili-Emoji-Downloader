@@ -2,6 +2,14 @@
 
 ## 使用教程
 
+### Request
+
+```python
+python api_request.py
+```
+
+### Selenium
+
 **此程序依赖于Selenium，请根据您使用的浏览器选择驱动安装及调整代码**
 
 安装依赖
