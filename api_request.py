@@ -18,7 +18,8 @@ if not download_folder.exists() and not download_folder.is_dir():
     download_folder.mkdir()
 
 headers = {
-    'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+    'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;'
+              'q=0.8,application/signed-exchange;v=b3;q=0.7',
     'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8',
     'cache-control': 'no-cache',
     'dnt': '1',
@@ -31,7 +32,8 @@ headers = {
     'sec-fetch-site': 'none',
     'sec-fetch-user': '?1',
     'upgrade-insecure-requests': '1',
-    'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+    'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                  'Chrome/123.0.0.0 Safari/537.36',
 }
 httpx_cookies = httpx.Cookies()
 limit = asyncio.Semaphore(20)
@@ -73,11 +75,11 @@ def load_cookies():
 async def get(url: str, params: dict) -> Response:
     try:
         async with limit:
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(timeout=30) as client:
                 response = await client.get(url, params=params, cookies=httpx_cookies, headers=headers)
                 return response
     except Exception as e:
-        print(e)
+        tqdm.tqdm.write(f'Error: {url} {e}')
         time.sleep(1)
         return await get(url, params)
 
@@ -105,7 +107,7 @@ async def download(url: str, emote_name: str, ids: str, filename: str) -> None:
         else:
             return
     except Exception as e:
-        print(e, url)
+        tqdm.tqdm.write(f'Error: {e} {url}')
 
 
 # 获取表情列表
@@ -117,7 +119,7 @@ async def get_emote_list() -> Union[None, Dict[str, Union[str, Dict[str, str]]]]
     if response['code'] == 0:
         return response['data']['all_packages']
     else:
-        print('error code:', response['code'])
+        tqdm.tqdm.write('error code:', response['code'])
         return None
 
 
@@ -134,11 +136,11 @@ async def get_emote_detail_list(data) -> List:
     return list(chain(*resp))
 
 
-def download_emote_list() -> List:
-    # emote_list = await get_emote_list()
-    # emote_detail_list = await get_emote_detail_list(emote_list)
-    emote_list = asyncio.run(get_emote_list())
-    emote_detail_list = asyncio.run(get_emote_detail_list(emote_list))
+async def download_emote_list() -> List:
+    emote_list = await get_emote_list()
+    emote_detail_list = await get_emote_detail_list(emote_list)
+    # emote_list = asyncio.run(get_emote_list())
+    # emote_detail_list = asyncio.run(get_emote_detail_list(emote_list))
     if emote_list is None:
         return []
     else:
@@ -167,7 +169,7 @@ def download_emote_list() -> List:
 
 async def main():
     load_cookies()
-    resp = download_emote_list()
+    resp = await download_emote_list()
     task_list = []
     for i in resp:
         task_list.append(asyncio.create_task(download(*i)))
