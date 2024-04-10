@@ -57,8 +57,8 @@ def load_cookies():
     else:
         # 等待登录
         time.sleep(0.25)
-        while driver.current_url != 'https://passport.bilibili.com/account/security#/home':
-            time.sleep(0.5)
+    while driver.current_url != 'https://passport.bilibili.com/account/security#/home':
+        time.sleep(0.5)
 
     # 读取并保存cookies
     cookies = driver.get_cookies()
