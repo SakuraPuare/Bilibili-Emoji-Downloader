@@ -1,0 +1,5 @@
+httpx
+bs4
+selenium
+beautifulsoup4
+tqdm
